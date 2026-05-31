@@ -155,6 +155,27 @@ pub fn global_from_yaml(yaml: &str) -> Result<GlobalArea, JsError> {
     minilogue_core::yaml::global_from_yaml_str(yaml).map_err(js_err)
 }
 
+// --- parameter metadata / help (for the editor UI) ---
+
+/// Tooltip / screen-reader help for a parameter path (e.g. `"filter.cutoff"`).
+#[wasm_bindgen(js_name = helpFor)]
+pub fn help_for(path: &str) -> Option<String> {
+    minilogue_core::params::help_for(path).map(String::from)
+}
+
+/// Program parameter catalog: `[{ path, label, group, kind, help }]` — labels,
+/// ranges/units, and enum option labels for building accessible controls.
+#[wasm_bindgen(js_name = programParamCatalog)]
+pub fn program_param_catalog() -> Result<JsValue, JsError> {
+    serde_wasm_bindgen::to_value(minilogue_core::params::PROGRAM_PARAMS).map_err(js_err)
+}
+
+/// Global parameter catalog (same shape as [`program_param_catalog`]).
+#[wasm_bindgen(js_name = globalParamCatalog)]
+pub fn global_param_catalog() -> Result<JsValue, JsError> {
+    serde_wasm_bindgen::to_value(minilogue_core::params::GLOBAL_PARAMS).map_err(js_err)
+}
+
 // --- constants ---
 
 /// Korg model ID for the original minilogue (`0x2C`).

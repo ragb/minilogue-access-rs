@@ -12,6 +12,7 @@ pub mod function;
 pub mod global;
 pub mod mnlg;
 pub mod pack;
+pub mod params;
 pub mod program;
 #[cfg(feature = "schema")]
 pub mod schema;
