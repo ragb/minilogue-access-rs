@@ -31,3 +31,6 @@ tools/explore/dumps/
 # OS
 .DS_Store
 Thumbs.db
+
+# Korg factory patch data — kept locally for the regression test, not redistributed
+minilogue-core/tests/fixtures/factory_library.mnlglib

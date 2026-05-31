@@ -1,5 +1,9 @@
 //! Regression: every program in a real 200-slot Korg Librarian `.mnlglib`
 //! decodes and round-trips byte-exact through the typed model.
+//!
+//! The fixture is Korg's factory patch data, so it is **not committed** (it is
+//! kept locally and gitignored). These tests skip when it is absent — e.g. on
+//! CI — and run in full on a machine that has it.
 
 use std::io::{Cursor, Read};
 use std::path::Path;
@@ -7,17 +11,26 @@ use std::path::Path;
 use minilogue_core::mnlg::read_library;
 use minilogue_core::Program;
 
-fn library_bytes() -> Vec<u8> {
+/// The library bytes, or `None` if the (uncommitted) fixture isn't present.
+fn library_bytes() -> Option<Vec<u8>> {
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("fixtures")
         .join("factory_library.mnlglib");
-    std::fs::read(path).unwrap()
+    if !path.exists() {
+        eprintln!(
+            "skipping: {} not present (Korg factory data, not redistributed)",
+            path.display()
+        );
+        return None;
+    }
+    Some(std::fs::read(path).unwrap())
 }
 
 #[test]
 fn imports_all_200_programs() {
-    let progs = read_library(&library_bytes()).expect("read_library");
+    let Some(bytes) = library_bytes() else { return };
+    let progs = read_library(&bytes).expect("read_library");
     assert_eq!(progs.len(), 200);
     assert_eq!(progs[0].program.name, "PolyLogue");
     assert_eq!(progs[1].program.name, "PWM Strings");
@@ -25,7 +38,7 @@ fn imports_all_200_programs() {
 
 #[test]
 fn every_real_program_round_trips_byte_exact() {
-    let bytes = library_bytes();
+    let Some(bytes) = library_bytes() else { return };
     let mut archive = zip::ZipArchive::new(Cursor::new(&bytes[..])).unwrap();
     let mut names: Vec<String> = archive
         .file_names()
