@@ -35,7 +35,10 @@ pub struct ProgInfo {
 }
 
 /// A program plus its container metadata.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "tsify", derive(tsify_next::Tsify))]
+#[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MnlgProgram {
     pub program: Program,
     pub info: ProgInfo,

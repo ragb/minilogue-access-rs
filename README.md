@@ -14,26 +14,29 @@ the Korg Sound Librarian format.
 
 ## Status
 
-**Early build.** Protocol facts are in [docs/sysex-notes.md](docs/sysex-notes.md),
-now confirmed against the real device (framing, ports, function codes, 7→8
-packing, program/global sizes). Real captures live in
-`minilogue-core/tests/fixtures/` (current program, global, two stored slots).
+**Working.** The protocol (in [docs/sysex-notes.md](docs/sysex-notes.md)) is fully
+reverse-engineered and confirmed on hardware, and the core, CLI, and wasm
+bindings are done and validated.
 
-Done so far: the SysEx [`Frame`](minilogue-core/src/sysex.rs) codec, Korg
-[7→8 packing](minilogue-core/src/pack.rs) (proptest invariant),
-[`Function`](minilogue-core/src/function.rs) codes, the typed
-[`GlobalArea`](minilogue-core/src/global.rs) (96 B) and
-[`Program`](minilogue-core/src/program.rs) (448 B, with 10-bit param packing,
-named enums, and the motion/note sequencer) — all green against a **byte-exact
-round-trip of every device fixture**, with symbolic YAML and generated JSON
-Schemas (`minilogue schema global|program`). See
-[`examples/library_tour.rs`](minilogue-core/examples/library_tour.rs).
+- **Core** — SysEx [`Frame`](minilogue-core/src/sysex.rs), Korg
+  [7→8 packing](minilogue-core/src/pack.rs), the typed
+  [`GlobalArea`](minilogue-core/src/global.rs) (96 B) and
+  [`Program`](minilogue-core/src/program.rs) (448 B: 10-bit packing, named enums,
+  motion/note sequencer), and [`.mnlgprog`/`.mnlglib`](minilogue-core/src/mnlg.rs)
+  interop. Symbolic YAML + generated JSON Schemas.
+- **CLI** — `ports`, `identity`, `dump`/`sync` over USB **port 2**, `show`,
+  `schema`, and `mnlg import/export/lib`. Tested live against the device.
+- **wasm** — [full TypeScript bindings](minilogue-wasm/src/lib.rs): decode/encode
+  program & global dumps, request builders, `.mnlgprog`/`.mnlglib` import/export,
+  YAML conversion — typed via `tsify`.
 
-**Next:** `.mnlgprog`/`.mnlglib` ZIP interop, then the MIDI CLI (`dump`/`sync`/
-`write` over the device's USB port 2) and the wasm editor. The CLI currently
-exposes `ports` and `schema`.
+**Validation:** every codec path round-trips byte-exact against device captures
+**and** all 200 programs of a genuine Korg Sound Librarian `.mnlglib`.
 
-## CLI (planned surface)
+**Next:** the accessible (ARIA / keyboard / screen-reader) web editor on top of
+the wasm bindings; minor flag-byte (66/72/73) semantic decode.
+
+## CLI
 
 ```
 minilogue ports                                   # list MIDI ports
