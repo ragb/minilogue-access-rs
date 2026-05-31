@@ -1,0 +1,523 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Program",
+  "description": "A complete minilogue program.",
+  "type": "object",
+  "required": [
+    "amp_eg",
+    "amp_velocity",
+    "bend_range",
+    "cross_mod_depth",
+    "delay",
+    "filter",
+    "keyboard_octave",
+    "lfo",
+    "lfo_portamento_flags",
+    "mixer",
+    "mod_eg",
+    "name",
+    "portamento_time",
+    "program_level",
+    "reserved",
+    "ring",
+    "sequencer",
+    "slider_assign",
+    "sync",
+    "vco1",
+    "vco2",
+    "vco2_pitch_eg_int",
+    "voice_mode",
+    "voice_mode_depth"
+  ],
+  "properties": {
+    "amp_eg": {
+      "$ref": "#/definitions/Eg"
+    },
+    "amp_velocity": {
+      "type": "integer",
+      "format": "uint8",
+      "minimum": 0.0
+    },
+    "bend_range": {
+      "description": "Pitch-bend range, ±1..=12 semitones (raw encoding preserved).",
+      "type": "integer",
+      "format": "uint8",
+      "minimum": 0.0
+    },
+    "cross_mod_depth": {
+      "type": "integer",
+      "format": "uint16",
+      "minimum": 0.0
+    },
+    "delay": {
+      "$ref": "#/definitions/Delay"
+    },
+    "filter": {
+      "$ref": "#/definitions/Filter"
+    },
+    "keyboard_octave": {
+      "description": "Keyboard octave (offset 73), raw. Low 3 bits = 0..=4 (−2..+2); upper bits carry flags, so the byte is preserved verbatim.",
+      "type": "integer",
+      "format": "uint8",
+      "minimum": 0.0
+    },
+    "lfo": {
+      "$ref": "#/definitions/Lfo"
+    },
+    "lfo_portamento_flags": {
+      "description": "LFO/portamento flag byte (offset 69), preserved raw pending decode.",
+      "type": "integer",
+      "format": "uint8",
+      "minimum": 0.0
+    },
+    "mixer": {
+      "$ref": "#/definitions/Mixer"
+    },
+    "mod_eg": {
+      "$ref": "#/definitions/Eg"
+    },
+    "name": {
+      "type": "string"
+    },
+    "portamento_time": {
+      "type": "integer",
+      "format": "uint8",
+      "minimum": 0.0
+    },
+    "program_level": {
+      "description": "Program output level, 77..=127 = −25..+25 dB.",
+      "type": "integer",
+      "format": "uint8",
+      "minimum": 0.0
+    },
+    "reserved": {
+      "description": "Opaque device bytes (reserved regions + a few undocumented high bits of packed bytes) preserved verbatim for byte-exact round-trip. Not meant to be hand-edited.",
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "format": "uint8",
+        "minimum": 0.0
+      }
+    },
+    "ring": {
+      "type": "boolean"
+    },
+    "sequencer": {
+      "$ref": "#/definitions/Sequencer"
+    },
+    "slider_assign": {
+      "description": "Slider assignment target, 0..=28 (see Korg doc; named enum TODO).",
+      "type": "integer",
+      "format": "uint8",
+      "minimum": 0.0
+    },
+    "sync": {
+      "type": "boolean"
+    },
+    "vco1": {
+      "$ref": "#/definitions/Oscillator"
+    },
+    "vco2": {
+      "$ref": "#/definitions/Oscillator"
+    },
+    "vco2_pitch_eg_int": {
+      "type": "integer",
+      "format": "uint16",
+      "minimum": 0.0
+    },
+    "voice_mode": {
+      "$ref": "#/definitions/VoiceMode"
+    },
+    "voice_mode_depth": {
+      "type": "integer",
+      "format": "uint16",
+      "minimum": 0.0
+    }
+  },
+  "definitions": {
+    "CutoffAmount": {
+      "description": "Cutoff velocity / keyboard-track amount (0%, 50%, 100%).",
+      "type": "string",
+      "enum": [
+        "off",
+        "half",
+        "full"
+      ]
+    },
+    "Delay": {
+      "description": "Delay effect.",
+      "type": "object",
+      "required": [
+        "feedback",
+        "hi_pass_cutoff",
+        "output_routing",
+        "time"
+      ],
+      "properties": {
+        "feedback": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "hi_pass_cutoff": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "output_routing": {
+          "$ref": "#/definitions/DelayRouting"
+        },
+        "time": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        }
+      }
+    },
+    "DelayRouting": {
+      "description": "Delay output routing.",
+      "type": "string",
+      "enum": [
+        "bypass",
+        "pre_filter",
+        "post_filter"
+      ]
+    },
+    "Eg": {
+      "description": "An envelope generator (10-bit A/D/S/R).",
+      "type": "object",
+      "required": [
+        "attack",
+        "decay",
+        "release",
+        "sustain"
+      ],
+      "properties": {
+        "attack": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "decay": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "release": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "sustain": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        }
+      }
+    },
+    "Filter": {
+      "description": "Filter section.",
+      "type": "object",
+      "required": [
+        "cutoff",
+        "eg_int",
+        "keyboard_track",
+        "pole",
+        "resonance",
+        "velocity"
+      ],
+      "properties": {
+        "cutoff": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "eg_int": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "keyboard_track": {
+          "$ref": "#/definitions/CutoffAmount"
+        },
+        "pole": {
+          "$ref": "#/definitions/FilterType"
+        },
+        "resonance": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "velocity": {
+          "$ref": "#/definitions/CutoffAmount"
+        }
+      }
+    },
+    "FilterType": {
+      "description": "Filter slope.",
+      "type": "string",
+      "enum": [
+        "two_pole",
+        "four_pole"
+      ]
+    },
+    "Lfo": {
+      "description": "LFO section.",
+      "type": "object",
+      "required": [
+        "eg_mod",
+        "int",
+        "rate",
+        "target",
+        "wave"
+      ],
+      "properties": {
+        "eg_mod": {
+          "$ref": "#/definitions/LfoEgMod"
+        },
+        "int": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "rate": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "target": {
+          "$ref": "#/definitions/LfoTarget"
+        },
+        "wave": {
+          "$ref": "#/definitions/LfoWave"
+        }
+      }
+    },
+    "LfoEgMod": {
+      "description": "What the LFO's EG modulates.",
+      "type": "string",
+      "enum": [
+        "off",
+        "rate",
+        "int"
+      ]
+    },
+    "LfoTarget": {
+      "description": "LFO modulation target.",
+      "type": "string",
+      "enum": [
+        "cutoff",
+        "shape",
+        "pitch"
+      ]
+    },
+    "LfoWave": {
+      "description": "LFO waveform.",
+      "type": "string",
+      "enum": [
+        "square",
+        "triangle",
+        "sawtooth"
+      ]
+    },
+    "Mixer": {
+      "description": "Source mixer levels (10-bit each).",
+      "type": "object",
+      "required": [
+        "noise",
+        "vco1",
+        "vco2"
+      ],
+      "properties": {
+        "noise": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "vco1": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "vco2": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        }
+      }
+    },
+    "MotionSlot": {
+      "description": "One of four motion-recording lanes.",
+      "type": "object",
+      "required": [
+        "param0",
+        "param1",
+        "step_bitmap"
+      ],
+      "properties": {
+        "param0": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "param1": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "step_bitmap": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        }
+      }
+    },
+    "Octave": {
+      "description": "Oscillator footage. 0=16', 1=8', 2=4', 3=2'.",
+      "type": "string",
+      "enum": [
+        "sixteen",
+        "eight",
+        "four",
+        "two"
+      ]
+    },
+    "Oscillator": {
+      "description": "A VCO: 10-bit pitch and shape, plus octave and waveform.",
+      "type": "object",
+      "required": [
+        "octave",
+        "pitch",
+        "shape",
+        "wave"
+      ],
+      "properties": {
+        "octave": {
+          "$ref": "#/definitions/Octave"
+        },
+        "pitch": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "shape": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "wave": {
+          "$ref": "#/definitions/Wave"
+        }
+      }
+    },
+    "Sequencer": {
+      "description": "16-step note + motion sequencer.",
+      "type": "object",
+      "required": [
+        "bpm_tenths",
+        "default_gate_time",
+        "motion_slots",
+        "step_length",
+        "step_resolution",
+        "steps",
+        "swing"
+      ],
+      "properties": {
+        "bpm_tenths": {
+          "description": "Tempo × 10 (1000 = 100.0 BPM), range 100..=3000.",
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "default_gate_time": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "motion_slots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MotionSlot"
+          }
+        },
+        "step_length": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "step_resolution": {
+          "$ref": "#/definitions/StepResolution"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Step"
+          }
+        },
+        "swing": {
+          "type": "integer",
+          "format": "int8"
+        }
+      }
+    },
+    "Step": {
+      "description": "One sequencer step. `event` is the raw 20-byte payload (not yet decoded).",
+      "type": "object",
+      "required": [
+        "event",
+        "motion_on",
+        "on"
+      ],
+      "properties": {
+        "event": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "uint8",
+            "minimum": 0.0
+          }
+        },
+        "motion_on": {
+          "type": "boolean"
+        },
+        "on": {
+          "type": "boolean"
+        }
+      }
+    },
+    "StepResolution": {
+      "description": "Sequencer step resolution.",
+      "type": "string",
+      "enum": [
+        "sixteenth",
+        "eighth",
+        "quarter",
+        "half",
+        "whole"
+      ]
+    },
+    "VoiceMode": {
+      "description": "Voice allocation mode.",
+      "type": "string",
+      "enum": [
+        "poly",
+        "duo",
+        "unison",
+        "mono",
+        "chord",
+        "delay",
+        "arp",
+        "sidechain"
+      ]
+    },
+    "Wave": {
+      "description": "Oscillator waveform.",
+      "type": "string",
+      "enum": [
+        "square",
+        "triangle",
+        "sawtooth"
+      ]
+    }
+  }
+}

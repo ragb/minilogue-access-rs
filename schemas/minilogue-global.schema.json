@@ -1,0 +1,173 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GlobalArea",
+  "description": "The minilogue global area.",
+  "type": "object",
+  "required": [
+    "audio_in",
+    "auto_power_off",
+    "brightness",
+    "clock_source",
+    "favorites",
+    "knob_mode",
+    "local_sw",
+    "master_tune",
+    "midi_channel",
+    "midi_route",
+    "oscilloscope",
+    "parameter_display",
+    "rx_short_enabled",
+    "sync_in_polarity",
+    "sync_in_unit",
+    "sync_out_polarity",
+    "sync_out_unit",
+    "transpose",
+    "tx_short_enabled",
+    "velocity_curve"
+  ],
+  "properties": {
+    "audio_in": {
+      "type": "boolean"
+    },
+    "auto_power_off": {
+      "type": "boolean"
+    },
+    "brightness": {
+      "description": "Display brightness, 1..=10 (stored on the wire as 0..=9).",
+      "type": "integer",
+      "format": "uint8",
+      "minimum": 0.0
+    },
+    "clock_source": {
+      "$ref": "#/definitions/ClockSource"
+    },
+    "favorites": {
+      "description": "Favourite slots → program numbers (0..=199). The MIDI doc lists 8 at 64..=71; the device emits 16 (64..=79), so all 16 are preserved here.",
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "format": "uint8",
+        "minimum": 0.0
+      }
+    },
+    "knob_mode": {
+      "$ref": "#/definitions/KnobMode"
+    },
+    "local_sw": {
+      "type": "boolean"
+    },
+    "master_tune": {
+      "description": "Master tune, cents (−50..=50).",
+      "type": "integer",
+      "format": "int8"
+    },
+    "midi_channel": {
+      "description": "MIDI channel, 1..=16 (stored on the wire as 0..=15).",
+      "type": "integer",
+      "format": "uint8",
+      "minimum": 0.0
+    },
+    "midi_route": {
+      "$ref": "#/definitions/MidiRoute"
+    },
+    "oscilloscope": {
+      "type": "boolean"
+    },
+    "parameter_display": {
+      "$ref": "#/definitions/ParameterDisplay"
+    },
+    "rx_short_enabled": {
+      "type": "boolean"
+    },
+    "sync_in_polarity": {
+      "$ref": "#/definitions/SyncPolarity"
+    },
+    "sync_in_unit": {
+      "$ref": "#/definitions/SyncUnit"
+    },
+    "sync_out_polarity": {
+      "$ref": "#/definitions/SyncPolarity"
+    },
+    "sync_out_unit": {
+      "$ref": "#/definitions/SyncUnit"
+    },
+    "transpose": {
+      "description": "Transpose, semitones (−12..=12).",
+      "type": "integer",
+      "format": "int8"
+    },
+    "tx_short_enabled": {
+      "type": "boolean"
+    },
+    "velocity_curve": {
+      "$ref": "#/definitions/VelocityCurve"
+    }
+  },
+  "definitions": {
+    "ClockSource": {
+      "description": "Sequencer/arp clock source (offset 9).",
+      "type": "string",
+      "enum": [
+        "auto_usb",
+        "auto_midi",
+        "internal"
+      ]
+    },
+    "KnobMode": {
+      "description": "Knob behaviour when the physical position differs from the stored value (offset 7).",
+      "type": "string",
+      "enum": [
+        "jump",
+        "catch",
+        "scale"
+      ]
+    },
+    "MidiRoute": {
+      "description": "Where MIDI is routed (offset 16).",
+      "type": "string",
+      "enum": [
+        "usb_and_midi",
+        "usb"
+      ]
+    },
+    "ParameterDisplay": {
+      "description": "Parameter display mode (offset 26): stored 1=Normal, 2=All.",
+      "type": "string",
+      "enum": [
+        "normal",
+        "all"
+      ]
+    },
+    "SyncPolarity": {
+      "description": "Sync jack edge polarity (offsets 11 and 12).",
+      "type": "string",
+      "enum": [
+        "rise",
+        "fall"
+      ]
+    },
+    "SyncUnit": {
+      "description": "Sync jack note unit (offsets 10 and 13).",
+      "type": "string",
+      "enum": [
+        "sixteenth",
+        "eighth"
+      ]
+    },
+    "VelocityCurve": {
+      "description": "Velocity response curve (offset 6).",
+      "type": "string",
+      "enum": [
+        "type1",
+        "type2",
+        "type3",
+        "type4",
+        "type5",
+        "type6",
+        "type7",
+        "type8",
+        "const127"
+      ]
+    }
+  }
+}

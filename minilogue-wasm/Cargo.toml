@@ -1,0 +1,25 @@
+[package]
+name = "minilogue-wasm"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "WASM/TypeScript bindings for minilogue-core."
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+minilogue-core = { workspace = true, features = ["tsify"] }
+wasm-bindgen = { workspace = true }
+serde = { workspace = true }
+serde-wasm-bindgen = { workspace = true }
+tsify-next = { workspace = true }
+getrandom = { workspace = true }
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"
+
+[package.metadata.wasm-pack.profile.release]
+# rustc emits wasm with features wasm-opt 0.x may reject; skip post-opt.
+wasm-opt = false

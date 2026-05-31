@@ -1,0 +1,36 @@
+[workspace]
+resolver = "2"
+members = ["minilogue-core", "minilogue", "minilogue-wasm"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/ragb/minilogue-access-rs"
+description = "Korg minilogue SysEx codec, CLI, and WASM bindings."
+
+[workspace.dependencies]
+minilogue-core = { path = "minilogue-core" }
+thiserror = "1"
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
+serde_json = "1"
+log = "0.4"
+env_logger = "0.11"
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+midir = "0.10"
+# Used by minilogue-core::mnlg for .mnlgprog / .mnlglib ZIP containers.
+# Wired into minilogue-core in Phase 4 (file-format interop), once we have a
+# real Librarian export to round-trip against. default-features off keeps it
+# wasm-friendly; feature set is pinned when first referenced.
+zip = { version = "2", default-features = false, features = ["deflate"] }
+wasm-bindgen = "0.2"
+serde-wasm-bindgen = "0.6"
+tsify-next = { version = "0.5", features = ["js"] }
+getrandom = { version = "0.3", features = ["wasm_js"] }
+schemars = "0.8"
+
+[profile.release]
+lto = "thin"
+strip = true

@@ -1,0 +1,15 @@
+# Generated schemas and all JSON use LF so CI's `diff` matches Linux output.
+*.json text eol=lf
+# YAML patch dumps / fixtures use LF.
+*.yaml text eol=lf
+*.yml text eol=lf
+
+# Binary captures — never line-ending convert.
+*.syx binary
+*.mnlgprog binary
+*.mnlglib binary
+*.mnlgpreset binary
+*.prog_bin binary
+
+# License text — store with LF, never auto-convert.
+LICENSE text eol=lf

@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-D warnings"
+  # Opt into Node 24 for JS actions ahead of the forced switch; silences
+  # deprecation warnings on checkout / upload-artifact / wasm-pack-action.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  native:
+    name: Native (Ubuntu)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux MIDI deps
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Format check
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace --locked
+
+      - name: Verify schemas/ are up to date
+        # Regenerates the committed JSON Schemas and fails on drift. To fix
+        # locally: cargo run --bin minilogue -- schema global > schemas/minilogue-global.schema.json
+        run: |
+          cargo run --release --bin minilogue --locked -- schema global > /tmp/global.schema.json
+          cargo run --release --bin minilogue --locked -- schema program > /tmp/program.schema.json
+          diff -u schemas/minilogue-global.schema.json /tmp/global.schema.json
+          diff -u schemas/minilogue-program.schema.json /tmp/program.schema.json
+
+  wasm:
+    name: WASM bindings
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install wasm-pack
+        uses: jetli/wasm-pack-action@v0.4.0
+        with:
+          version: latest
+
+      - name: wasm-pack build (web)
+        working-directory: minilogue-wasm
+        run: wasm-pack build --target web --release
+
+      - name: Upload pkg/ artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: minilogue-wasm-pkg
+          path: minilogue-wasm/pkg/
+          if-no-files-found: error

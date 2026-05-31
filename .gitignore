@@ -1,0 +1,33 @@
+/target
+**/*.rs.bk
+Cargo.lock.bak
+
+# WASM build outputs
+/minilogue-wasm/pkg
+/minilogue-wasm/target
+
+# Python explorer venvs and caches
+tools/explore/.venv/
+tools/explore/__pycache__/
+tools/explore/*.pyc
+
+# Captured SysEx that's experimental / not yet promoted to fixtures
+tools/explore/captures/
+
+# YAML dumps produced by running `minilogue dump`
+tools/explore/dumps/
+
+# Generated sample patch files (from the export_samples example)
+/samples/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Claude Code per-project state
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db

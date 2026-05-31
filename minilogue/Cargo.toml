@@ -1,0 +1,21 @@
+[package]
+name = "minilogue"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "CLI for the Korg minilogue: MIDI dump/sync and .mnlgprog interop."
+
+[[bin]]
+name = "minilogue"
+path = "src/main.rs"
+
+[dependencies]
+minilogue-core = { workspace = true, features = ["schema"] }
+anyhow = { workspace = true }
+clap = { workspace = true }
+midir = { workspace = true }
+serde_yaml = { workspace = true }
+serde_json = { workspace = true }
+log = { workspace = true }
+env_logger = { workspace = true }

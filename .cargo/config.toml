@@ -1,0 +1,4 @@
+# Required for `getrandom` 0.3 on wasm32 — any transitive getrandom user must
+# pick the JS backend or it fails to compile for wasm32-unknown-unknown.
+[target.wasm32-unknown-unknown]
+rustflags = ['--cfg', 'getrandom_backend="wasm_js"']
