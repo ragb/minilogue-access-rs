@@ -59,24 +59,16 @@ impl Mapping {
     }
     fn cc(&self) -> u8 {
         match self {
-            Mapping::Range { cc, .. }
-            | Mapping::Choice { cc, .. }
-            | Mapping::Bool { cc } => *cc,
+            Mapping::Range { cc, .. } | Mapping::Choice { cc, .. } | Mapping::Bool { cc } => *cc,
         }
     }
 }
 
 // --- shared choice byte tables (Korg's documented discrete values) ---
 
-const OCTAVE_BYTES: &[(&str, u8)] = &[
-    ("sixteen", 0),
-    ("eight", 42),
-    ("four", 84),
-    ("two", 127),
-];
+const OCTAVE_BYTES: &[(&str, u8)] = &[("sixteen", 0), ("eight", 42), ("four", 84), ("two", 127)];
 const WAVE_BYTES: &[(&str, u8)] = &[("square", 0), ("triangle", 64), ("sawtooth", 127)];
-const LFO_TARGET_BYTES: &[(&str, u8)] =
-    &[("cutoff", 0), ("shape", 64), ("pitch", 127)];
+const LFO_TARGET_BYTES: &[(&str, u8)] = &[("cutoff", 0), ("shape", 64), ("pitch", 127)];
 const LFO_EG_BYTES: &[(&str, u8)] = &[("off", 0), ("rate", 64), ("int", 127)];
 const AMOUNT_BYTES: &[(&str, u8)] = &[("off", 0), ("half", 64), ("full", 127)];
 const POLE_BYTES: &[(&str, u8)] = &[("two_pole", 0), ("four_pole", 127)];
@@ -89,60 +81,310 @@ const DELAY_ROUTING_BYTES: &[(&str, u8)] =
 /// MIDI Implementation document so spot-checks against the spec are easy).
 const PROGRAM_CC: &[(&str, Mapping)] = &[
     // Envelopes — Amp EG
-    ("amp_eg.attack", Mapping::Range { cc: 16, min: 0, max: 1023 }),
-    ("amp_eg.decay", Mapping::Range { cc: 17, min: 0, max: 1023 }),
-    ("amp_eg.sustain", Mapping::Range { cc: 18, min: 0, max: 1023 }),
-    ("amp_eg.release", Mapping::Range { cc: 19, min: 0, max: 1023 }),
+    (
+        "amp_eg.attack",
+        Mapping::Range {
+            cc: 16,
+            min: 0,
+            max: 1023,
+        },
+    ),
+    (
+        "amp_eg.decay",
+        Mapping::Range {
+            cc: 17,
+            min: 0,
+            max: 1023,
+        },
+    ),
+    (
+        "amp_eg.sustain",
+        Mapping::Range {
+            cc: 18,
+            min: 0,
+            max: 1023,
+        },
+    ),
+    (
+        "amp_eg.release",
+        Mapping::Range {
+            cc: 19,
+            min: 0,
+            max: 1023,
+        },
+    ),
     // Mod EG
-    ("mod_eg.attack", Mapping::Range { cc: 20, min: 0, max: 1023 }),
-    ("mod_eg.decay", Mapping::Range { cc: 21, min: 0, max: 1023 }),
-    ("mod_eg.sustain", Mapping::Range { cc: 22, min: 0, max: 1023 }),
-    ("mod_eg.release", Mapping::Range { cc: 23, min: 0, max: 1023 }),
+    (
+        "mod_eg.attack",
+        Mapping::Range {
+            cc: 20,
+            min: 0,
+            max: 1023,
+        },
+    ),
+    (
+        "mod_eg.decay",
+        Mapping::Range {
+            cc: 21,
+            min: 0,
+            max: 1023,
+        },
+    ),
+    (
+        "mod_eg.sustain",
+        Mapping::Range {
+            cc: 22,
+            min: 0,
+            max: 1023,
+        },
+    ),
+    (
+        "mod_eg.release",
+        Mapping::Range {
+            cc: 23,
+            min: 0,
+            max: 1023,
+        },
+    ),
     // LFO
-    ("lfo.rate", Mapping::Range { cc: 24, min: 0, max: 1023 }),
-    ("lfo.int", Mapping::Range { cc: 26, min: 0, max: 1023 }),
+    (
+        "lfo.rate",
+        Mapping::Range {
+            cc: 24,
+            min: 0,
+            max: 1023,
+        },
+    ),
+    (
+        "lfo.int",
+        Mapping::Range {
+            cc: 26,
+            min: 0,
+            max: 1023,
+        },
+    ),
     // Voice
-    ("voice_mode_depth", Mapping::Range { cc: 27, min: 0, max: 1023 }),
+    (
+        "voice_mode_depth",
+        Mapping::Range {
+            cc: 27,
+            min: 0,
+            max: 1023,
+        },
+    ),
     // Delay
-    ("delay.hi_pass_cutoff", Mapping::Range { cc: 29, min: 0, max: 1023 }),
-    ("delay.time", Mapping::Range { cc: 30, min: 0, max: 1023 }),
-    ("delay.feedback", Mapping::Range { cc: 31, min: 0, max: 1023 }),
+    (
+        "delay.hi_pass_cutoff",
+        Mapping::Range {
+            cc: 29,
+            min: 0,
+            max: 1023,
+        },
+    ),
+    (
+        "delay.time",
+        Mapping::Range {
+            cc: 30,
+            min: 0,
+            max: 1023,
+        },
+    ),
+    (
+        "delay.feedback",
+        Mapping::Range {
+            cc: 31,
+            min: 0,
+            max: 1023,
+        },
+    ),
     // Mixer & VCOs
-    ("mixer.noise", Mapping::Range { cc: 33, min: 0, max: 1023 }),
-    ("vco1.pitch", Mapping::Range { cc: 34, min: 0, max: 1023 }),
-    ("vco2.pitch", Mapping::Range { cc: 35, min: 0, max: 1023 }),
-    ("vco1.shape", Mapping::Range { cc: 36, min: 0, max: 1023 }),
-    ("vco2.shape", Mapping::Range { cc: 37, min: 0, max: 1023 }),
-    ("mixer.vco1", Mapping::Range { cc: 39, min: 0, max: 1023 }),
-    ("mixer.vco2", Mapping::Range { cc: 40, min: 0, max: 1023 }),
-    ("cross_mod_depth", Mapping::Range { cc: 41, min: 0, max: 1023 }),
-    ("vco2_pitch_eg_int", Mapping::Range { cc: 42, min: 0, max: 1023 }),
+    (
+        "mixer.noise",
+        Mapping::Range {
+            cc: 33,
+            min: 0,
+            max: 1023,
+        },
+    ),
+    (
+        "vco1.pitch",
+        Mapping::Range {
+            cc: 34,
+            min: 0,
+            max: 1023,
+        },
+    ),
+    (
+        "vco2.pitch",
+        Mapping::Range {
+            cc: 35,
+            min: 0,
+            max: 1023,
+        },
+    ),
+    (
+        "vco1.shape",
+        Mapping::Range {
+            cc: 36,
+            min: 0,
+            max: 1023,
+        },
+    ),
+    (
+        "vco2.shape",
+        Mapping::Range {
+            cc: 37,
+            min: 0,
+            max: 1023,
+        },
+    ),
+    (
+        "mixer.vco1",
+        Mapping::Range {
+            cc: 39,
+            min: 0,
+            max: 1023,
+        },
+    ),
+    (
+        "mixer.vco2",
+        Mapping::Range {
+            cc: 40,
+            min: 0,
+            max: 1023,
+        },
+    ),
+    (
+        "cross_mod_depth",
+        Mapping::Range {
+            cc: 41,
+            min: 0,
+            max: 1023,
+        },
+    ),
+    (
+        "vco2_pitch_eg_int",
+        Mapping::Range {
+            cc: 42,
+            min: 0,
+            max: 1023,
+        },
+    ),
     // Filter
-    ("filter.cutoff", Mapping::Range { cc: 43, min: 0, max: 1023 }),
-    ("filter.resonance", Mapping::Range { cc: 44, min: 0, max: 1023 }),
-    ("filter.eg_int", Mapping::Range { cc: 45, min: 0, max: 1023 }),
+    (
+        "filter.cutoff",
+        Mapping::Range {
+            cc: 43,
+            min: 0,
+            max: 1023,
+        },
+    ),
+    (
+        "filter.resonance",
+        Mapping::Range {
+            cc: 44,
+            min: 0,
+            max: 1023,
+        },
+    ),
+    (
+        "filter.eg_int",
+        Mapping::Range {
+            cc: 45,
+            min: 0,
+            max: 1023,
+        },
+    ),
     // Octaves and waves
-    ("vco1.octave", Mapping::Choice { cc: 48, options: OCTAVE_BYTES }),
-    ("vco2.octave", Mapping::Choice { cc: 49, options: OCTAVE_BYTES }),
-    ("vco1.wave", Mapping::Choice { cc: 50, options: WAVE_BYTES }),
-    ("vco2.wave", Mapping::Choice { cc: 51, options: WAVE_BYTES }),
+    (
+        "vco1.octave",
+        Mapping::Choice {
+            cc: 48,
+            options: OCTAVE_BYTES,
+        },
+    ),
+    (
+        "vco2.octave",
+        Mapping::Choice {
+            cc: 49,
+            options: OCTAVE_BYTES,
+        },
+    ),
+    (
+        "vco1.wave",
+        Mapping::Choice {
+            cc: 50,
+            options: WAVE_BYTES,
+        },
+    ),
+    (
+        "vco2.wave",
+        Mapping::Choice {
+            cc: 51,
+            options: WAVE_BYTES,
+        },
+    ),
     // LFO mode
-    ("lfo.target", Mapping::Choice { cc: 56, options: LFO_TARGET_BYTES }),
-    ("lfo.eg_mod", Mapping::Choice { cc: 57, options: LFO_EG_BYTES }),
-    ("lfo.wave", Mapping::Choice { cc: 58, options: WAVE_BYTES }),
+    (
+        "lfo.target",
+        Mapping::Choice {
+            cc: 56,
+            options: LFO_TARGET_BYTES,
+        },
+    ),
+    (
+        "lfo.eg_mod",
+        Mapping::Choice {
+            cc: 57,
+            options: LFO_EG_BYTES,
+        },
+    ),
+    (
+        "lfo.wave",
+        Mapping::Choice {
+            cc: 58,
+            options: WAVE_BYTES,
+        },
+    ),
     // Sync / Ring
     ("sync", Mapping::Bool { cc: 80 }),
     ("ring", Mapping::Bool { cc: 81 }),
     // Filter tracking / type
-    ("filter.velocity", Mapping::Choice { cc: 82, options: AMOUNT_BYTES }),
-    ("filter.keyboard_track", Mapping::Choice { cc: 83, options: AMOUNT_BYTES }),
-    ("filter.pole", Mapping::Choice { cc: 84, options: POLE_BYTES }),
+    (
+        "filter.velocity",
+        Mapping::Choice {
+            cc: 82,
+            options: AMOUNT_BYTES,
+        },
+    ),
+    (
+        "filter.keyboard_track",
+        Mapping::Choice {
+            cc: 83,
+            options: AMOUNT_BYTES,
+        },
+    ),
+    (
+        "filter.pole",
+        Mapping::Choice {
+            cc: 84,
+            options: POLE_BYTES,
+        },
+    ),
     // Delay routing
-    ("delay.output_routing", Mapping::Choice { cc: 88, options: DELAY_ROUTING_BYTES }),
+    (
+        "delay.output_routing",
+        Mapping::Choice {
+            cc: 88,
+            options: DELAY_ROUTING_BYTES,
+        },
+    ),
 ];
 
 fn lookup(path: &str) -> Option<&'static Mapping> {
-    PROGRAM_CC.iter().find_map(|(p, m)| (*p == path).then_some(m))
+    PROGRAM_CC
+        .iter()
+        .find_map(|(p, m)| (*p == path).then_some(m))
 }
 
 /// Build the three-byte CC frame for one program-parameter change, or

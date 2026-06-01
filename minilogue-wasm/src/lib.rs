@@ -167,8 +167,7 @@ pub fn global_from_yaml(yaml: &str) -> Result<GlobalArea, JsError> {
 /// SOUND port (port 2) that carries SysEx dumps.
 #[wasm_bindgen(js_name = paramMidiMessages)]
 pub fn param_midi_messages(path: &str, value: JsValue, channel: u8) -> Result<Vec<u8>, JsError> {
-    let cv: minilogue_core::cc::CcValue =
-        serde_wasm_bindgen::from_value(value).map_err(js_err)?;
+    let cv: minilogue_core::cc::CcValue = serde_wasm_bindgen::from_value(value).map_err(js_err)?;
     Ok(minilogue_core::cc::program_cc_message(path, &cv, channel).unwrap_or_default())
 }
 

@@ -505,8 +505,7 @@ impl Program {
             for (n, note) in step.notes.iter().enumerate() {
                 b[off + n] = note.pitch;
                 b[off + 4 + n] = note.velocity;
-                b[off + 8 + n] =
-                    (note.gate_time & 0x7F) | if note.trigger { 0x80 } else { 0 };
+                b[off + 8 + n] = (note.gate_time & 0x7F) | if note.trigger { 0x80 } else { 0 };
             }
             for (m, slot) in step.motion.iter().enumerate() {
                 if slot.len() != 2 {
