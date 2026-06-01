@@ -207,7 +207,10 @@ Validate every offset against a fixture before trusting it.
   polarity (10–13), MIDI route (16), MIDI channel (17, 0–15 = ch 1–16), local
   (18), Rx/Tx short-message enables (19–20), brightness (24), auto power off
   (25), parameter display (26), oscilloscope (27), **favorites 1–8 (64–71,
-  values 0–199)**.
+  values 0–199)**. Bytes 72–79 also look program-number-shaped in observed
+  fixtures (arithmetic progression spread across the slot range), but their
+  device-side meaning is **unverified** — Korg's doc only documents 8
+  favourites. They round-trip verbatim.
 
 ## 7. `.mnlgprog` / `.mnlglib` container (MED — confirm from a real export)
 

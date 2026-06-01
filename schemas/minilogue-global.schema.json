@@ -42,7 +42,7 @@
       "$ref": "#/definitions/ClockSource"
     },
     "favorites": {
-      "description": "Favourite slots → program numbers (0..=199). The MIDI doc lists 8 at 64..=71; the device emits 16 (64..=79), so all 16 are preserved here.",
+      "description": "Bytes 64..=79 of the global area — 16 program-number-like values (0..=199 if interpreted that way).\n\nKorg's MIDI Implementation Chart documents only the first **8** as favourite-slot bookmarks (bytes 64..=71, mapped to the 8 FAV buttons). Bytes 72..=79 hold an additional 8 program-number-shaped bytes in observed fixtures — could be reserved slots, a second-tier favourites bank, or unrelated state. Their device-side meaning is **not verified** against any documented spec or button behaviour.\n\nAll 16 are stored here so the GlobalArea round-trips byte-exact; the editor exposes only the documented 8.",
       "type": "array",
       "items": {
         "type": "integer",
