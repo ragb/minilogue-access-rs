@@ -157,6 +157,55 @@ pub fn global_from_yaml(yaml: &str) -> Result<GlobalArea, JsError> {
     minilogue_core::yaml::global_from_yaml_str(yaml).map_err(js_err)
 }
 
+// --- live editing (CC) ---
+
+/// Build the CC message frame for one program-parameter change, or an empty
+/// array if `path` has no CC mapping (sequencer, name, etc.) or `value`
+/// doesn't match the path's kind. `channel` is 1-based (1..=16).
+///
+/// CCs must be sent on the synth's KBD/KNOB port (USB port 1), NOT the
+/// SOUND port (port 2) that carries SysEx dumps.
+#[wasm_bindgen(js_name = paramMidiMessages)]
+pub fn param_midi_messages(path: &str, value: JsValue, channel: u8) -> Result<Vec<u8>, JsError> {
+    let cv: minilogue_core::cc::CcValue =
+        serde_wasm_bindgen::from_value(value).map_err(js_err)?;
+    Ok(minilogue_core::cc::program_cc_message(path, &cv, channel).unwrap_or_default())
+}
+
+/// True when the synth accepts live CC for this path. Editors can use it to
+/// surface which controls update live vs. need a full "Send to synth" push.
+#[wasm_bindgen(js_name = supportsLive)]
+pub fn supports_live(path: &str) -> bool {
+    minilogue_core::cc::supports_live(path)
+}
+
+/// Decode a 3-byte CC frame coming from the synth's KBD/KNOB port back into
+/// a `{ path, value, channel }` object the editor can drop straight into its
+/// program draft. Returns `null` for non-CC frames, unknown CC numbers, or
+/// choice-CC values that don't match a documented position.
+#[wasm_bindgen(js_name = decodeProgramCc)]
+pub fn decode_program_cc(bytes: &[u8]) -> Result<JsValue, JsError> {
+    match minilogue_core::cc::decode_program_cc(bytes) {
+        Some(decoded) => serde_wasm_bindgen::to_value(&decoded).map_err(js_err),
+        None => Ok(JsValue::NULL),
+    }
+}
+
+/// Bank Select MSB/LSB + Program Change frames that switch the synth's
+/// active patch to `slot` (0..=199) on `channel` (1-based). All three frames
+/// must be sent in order on the KBD/KNOB port.
+#[wasm_bindgen(js_name = programChangeMessages)]
+pub fn program_change_messages(slot: u16, channel: u8) -> Result<JsValue, JsError> {
+    serde_wasm_bindgen::to_value(&minilogue_core::cc::program_change(slot, channel)).map_err(js_err)
+}
+
+/// "Panic" — All Sound Off + All Notes Off on `channel` (1-based). Send on
+/// the KBD/KNOB port to silence stuck notes.
+#[wasm_bindgen(js_name = panicMessages)]
+pub fn panic_messages(channel: u8) -> Result<JsValue, JsError> {
+    serde_wasm_bindgen::to_value(&minilogue_core::cc::panic_messages(channel)).map_err(js_err)
+}
+
 // --- parameter metadata / help (for the editor UI) ---
 
 /// Tooltip / screen-reader help for a parameter path (e.g. `"filter.cutoff"`).

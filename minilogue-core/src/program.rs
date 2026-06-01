@@ -5,8 +5,12 @@
 //! (the LFO low-bit positions were confirmed on-device). See
 //! `../../docs/sysex-notes.md` §5.
 //!
-//! The 20-byte-per-step sequencer event payload is not yet sub-decoded; it is
-//! preserved verbatim (`Step::event`) so the program round-trips byte-exact.
+//! Sequencer step events: each step's 20-byte payload is **interleaved** —
+//! 4 voice-slot notes laid out as 4 bytes of pitch, 4 of velocity, 4 of
+//! gate-time-with-trigger-flag, then 8 bytes of motion data (4 slots × 2
+//! bytes). Layout cross-referenced from `jeffkistler/minilogue-editor` and
+//! confirmed against `current_with_sequence.syx` (rising line on slots 1,
+//! 3, 4, 5 with distinct velocities and a constant gate of 0x36).
 
 use serde::{Deserialize, Serialize};
 
@@ -110,8 +114,32 @@ prog_struct! {
     MotionSlot { param0: u8, param1: u8, step_bitmap: u16 }
 }
 prog_struct! {
-    /// One sequencer step. `event` is the raw 20-byte payload (not yet decoded).
-    Step { on: bool, motion_on: bool, event: Vec<u8> }
+    /// One of four voice slots in a step. Most patterns only use slot 0
+    /// (monophonic); slots 1–3 carry chord notes when `voice_mode == Chord`
+    /// or the user records multi-note steps from the keyboard.
+    StepNote {
+        /// MIDI note number 0..=127. 0 in unused slots.
+        pitch: u8,
+        /// 1..=127 attack velocity. 0 in unused slots.
+        velocity: u8,
+        /// 0..=72 = 0..=100% of the step length.
+        gate_time: u8,
+        /// Bit 7 of the gate byte. Believed to be the per-slot "trigger"
+        /// flag — when set, the note re-triggers vs. tying into the next
+        /// step. Preserved verbatim either way so the meaning can be
+        /// pinned down later without breaking round-trip.
+        trigger: bool,
+    }
+}
+prog_struct! {
+    /// One sequencer step. Holds the 4 voice slots + 4 raw 2-byte motion
+    /// payloads (motion sub-fields aren't decoded yet — kept verbatim).
+    Step {
+        on: bool,
+        motion_on: bool,
+        notes: Vec<StepNote>,
+        motion: Vec<Vec<u8>>,
+    }
 }
 prog_struct! {
     /// 16-step note + motion sequencer.
@@ -223,10 +251,25 @@ impl Program {
         let mut steps = Vec::with_capacity(16);
         for i in 0..16 {
             let off = 128 + i * 20;
+            let mut notes = Vec::with_capacity(4);
+            for n in 0..4 {
+                let g = b[off + 8 + n];
+                notes.push(StepNote {
+                    pitch: b[off + n],
+                    velocity: b[off + 4 + n],
+                    gate_time: g & 0x7F,
+                    trigger: g & 0x80 != 0,
+                });
+            }
+            let mut motion = Vec::with_capacity(4);
+            for m in 0..4 {
+                motion.push(vec![b[off + 12 + m * 2], b[off + 13 + m * 2]]);
+            }
             steps.push(Step {
                 on: steps_on & (1 << i) != 0,
                 motion_on: steps_motion & (1 << i) != 0,
-                event: b[off..off + 20].to_vec(),
+                notes,
+                motion,
             });
         }
 
@@ -446,14 +489,35 @@ impl Program {
             if step.motion_on {
                 steps_motion |= 1 << i;
             }
-            if step.event.len() != 20 {
+            if step.notes.len() != 4 {
                 return Err(CodecError::WrongLength {
-                    expected: 20,
-                    actual: step.event.len(),
+                    expected: 4,
+                    actual: step.notes.len(),
+                });
+            }
+            if step.motion.len() != 4 {
+                return Err(CodecError::WrongLength {
+                    expected: 4,
+                    actual: step.motion.len(),
                 });
             }
             let off = 128 + i * 20;
-            b[off..off + 20].copy_from_slice(&step.event);
+            for (n, note) in step.notes.iter().enumerate() {
+                b[off + n] = note.pitch;
+                b[off + 4 + n] = note.velocity;
+                b[off + 8 + n] =
+                    (note.gate_time & 0x7F) | if note.trigger { 0x80 } else { 0 };
+            }
+            for (m, slot) in step.motion.iter().enumerate() {
+                if slot.len() != 2 {
+                    return Err(CodecError::WrongLength {
+                        expected: 2,
+                        actual: slot.len(),
+                    });
+                }
+                b[off + 12 + m * 2] = slot[0];
+                b[off + 13 + m * 2] = slot[1];
+            }
         }
         b[108] = (steps_on & 0xFF) as u8;
         b[109] = (steps_on >> 8) as u8;

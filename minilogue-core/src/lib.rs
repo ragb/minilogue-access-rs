@@ -7,6 +7,7 @@
 //! [`global`] is the typed 96-byte global area; the typed 448-byte program model
 //! is built next. See `../../docs/sysex-notes.md`.
 
+pub mod cc;
 pub mod codec;
 pub mod function;
 pub mod global;
