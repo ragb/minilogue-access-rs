@@ -7,7 +7,7 @@
 //!
 //! Sequencer step events: each step's 20-byte payload is **interleaved** —
 //! 4 voice-slot notes laid out as 4 bytes of pitch, 4 of velocity, 4 of
-//! gate-time-with-trigger-flag, then 8 bytes of motion data (4 slots × 2
+//! gate-time-with-tie-flag, then 8 bytes of motion data (4 slots × 2
 //! bytes). Layout cross-referenced from `jeffkistler/minilogue-editor` and
 //! confirmed against `current_with_sequence.syx` (rising line on slots 1,
 //! 3, 4, 5 with distinct velocities and a constant gate of 0x36).
@@ -124,11 +124,11 @@ prog_struct! {
         velocity: u8,
         /// 0..=72 = 0..=100% of the step length.
         gate_time: u8,
-        /// Bit 7 of the gate byte. Believed to be the per-slot "trigger"
-        /// flag — when set, the note re-triggers vs. tying into the next
-        /// step. Preserved verbatim either way so the meaning can be
-        /// pinned down later without breaking round-trip.
-        trigger: bool,
+        /// Bit 7 of the gate byte. When set, this voice's note ties into
+        /// the same voice slot on the next step — no envelope retrigger
+        /// (legato). Korg calls it "tie" in the Owner's Manual (page 27,
+        /// "Recording a tie": REST + held key produces a tied note).
+        tie: bool,
     }
 }
 prog_struct! {
@@ -258,7 +258,7 @@ impl Program {
                     pitch: b[off + n],
                     velocity: b[off + 4 + n],
                     gate_time: g & 0x7F,
-                    trigger: g & 0x80 != 0,
+                    tie: g & 0x80 != 0,
                 });
             }
             let mut motion = Vec::with_capacity(4);
@@ -505,7 +505,7 @@ impl Program {
             for (n, note) in step.notes.iter().enumerate() {
                 b[off + n] = note.pitch;
                 b[off + 4 + n] = note.velocity;
-                b[off + 8 + n] = (note.gate_time & 0x7F) | if note.trigger { 0x80 } else { 0 };
+                b[off + 8 + n] = (note.gate_time & 0x7F) | if note.tie { 0x80 } else { 0 };
             }
             for (m, slot) in step.motion.iter().enumerate() {
                 if slot.len() != 2 {

@@ -501,7 +501,7 @@
       "required": [
         "gate_time",
         "pitch",
-        "trigger",
+        "tie",
         "velocity"
       ],
       "properties": {
@@ -517,8 +517,8 @@
           "format": "uint8",
           "minimum": 0.0
         },
-        "trigger": {
-          "description": "Bit 7 of the gate byte. Believed to be the per-slot \"trigger\" flag — when set, the note re-triggers vs. tying into the next step. Preserved verbatim either way so the meaning can be pinned down later without breaking round-trip.",
+        "tie": {
+          "description": "Bit 7 of the gate byte. When set, this voice's note ties into the same voice slot on the next step — no envelope retrigger (legato). Korg calls it \"tie\" in the Owner's Manual (page 27, \"Recording a tie\": REST + held key produces a tied note).",
           "type": "boolean"
         },
         "velocity": {
