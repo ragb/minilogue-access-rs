@@ -1,5 +1,3 @@
-    Finished `release` profile [optimized] target(s) in 0.12s
-     Running `target\release\minilogue.exe schema global`
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "GlobalArea",
