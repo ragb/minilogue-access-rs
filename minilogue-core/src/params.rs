@@ -58,6 +58,17 @@ pub struct Meta {
     pub kind: Kind,
     /// Tooltip / screen-reader help.
     pub help: &'static str,
+    /// True if this is a bounded magnitude (a "level"): a slider where
+    /// "50% of max" is a meaningful answer. The editor opts these sliders
+    /// into the user's percentage display when their `levelDisplay`
+    /// preference is set to percent. Centred/bipolar fields (where the
+    /// displayed centre means "no effect") and discrete values are not levels.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub level: bool,
+}
+
+fn is_false(b: &bool) -> bool {
+    !*b
 }
 
 const fn range(
@@ -75,6 +86,27 @@ const fn range(
         group,
         kind: Kind::Range { min, max, unit },
         help,
+        level: false,
+    }
+}
+/// Like [`range`] but flags the parameter as a level (bounded magnitude) so
+/// the editor opts it into percentage display. See [`Meta::level`].
+const fn level_range(
+    path: &'static str,
+    label: &'static str,
+    group: &'static str,
+    min: i32,
+    max: i32,
+    unit: Option<&'static str>,
+    help: &'static str,
+) -> Meta {
+    Meta {
+        path,
+        label,
+        group,
+        kind: Kind::Range { min, max, unit },
+        help,
+        level: true,
     }
 }
 const fn choice(
@@ -90,6 +122,7 @@ const fn choice(
         group,
         kind: Kind::Choice { options },
         help,
+        level: false,
     }
 }
 const fn toggle(
@@ -104,6 +137,7 @@ const fn toggle(
         group,
         kind: Kind::Bool,
         help,
+        level: false,
     }
 }
 
@@ -185,6 +219,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         group: "Program",
         kind: Kind::Text { max_len: 12 },
         help: "The patch name, up to 12 characters.",
+        level: false,
     },
     // VCO 1
     choice(
@@ -210,7 +245,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         TEN_BIT,
         "Fine pitch of oscillator 1; centre (512) is no detune.",
     ),
-    range(
+    level_range(
         "vco1.shape",
         "VCO 1 Shape",
         "VCO 1",
@@ -243,7 +278,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         TEN_BIT,
         "Fine pitch of oscillator 2; centre is no detune.",
     ),
-    range(
+    level_range(
         "vco2.shape",
         "VCO 2 Shape",
         "VCO 2",
@@ -253,7 +288,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         "Wave shape of oscillator 2.",
     ),
     // VCO 2 modulation
-    range(
+    level_range(
         "cross_mod_depth",
         "Cross Mod Depth",
         "VCO 2 Modulation",
@@ -262,7 +297,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         TEN_BIT,
         "Amount oscillator 2 frequency-modulates oscillator 1.",
     ),
-    range(
+    level_range(
         "vco2_pitch_eg_int",
         "VCO 2 Pitch EG Int",
         "VCO 2 Modulation",
@@ -284,7 +319,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         "Ring-modulate the two oscillators for metallic tones.",
     ),
     // Mixer
-    range(
+    level_range(
         "mixer.vco1",
         "VCO 1 Level",
         "Mixer",
@@ -293,7 +328,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         TEN_BIT,
         "Level of oscillator 1 into the filter.",
     ),
-    range(
+    level_range(
         "mixer.vco2",
         "VCO 2 Level",
         "Mixer",
@@ -302,7 +337,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         TEN_BIT,
         "Level of oscillator 2 into the filter.",
     ),
-    range(
+    level_range(
         "mixer.noise",
         "Noise Level",
         "Mixer",
@@ -312,7 +347,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         "Level of the noise generator into the filter.",
     ),
     // Filter
-    range(
+    level_range(
         "filter.cutoff",
         "Cutoff",
         "Filter",
@@ -321,7 +356,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         TEN_BIT,
         "Low-pass filter cutoff frequency. Lower is darker.",
     ),
-    range(
+    level_range(
         "filter.resonance",
         "Resonance",
         "Filter",
@@ -361,7 +396,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         "How much playing velocity raises the cutoff.",
     ),
     // Amp EG
-    range(
+    level_range(
         "amp_eg.attack",
         "Amp EG Attack",
         "Amp EG",
@@ -370,7 +405,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         TEN_BIT,
         "Time for the volume to rise after a key is pressed.",
     ),
-    range(
+    level_range(
         "amp_eg.decay",
         "Amp EG Decay",
         "Amp EG",
@@ -379,7 +414,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         TEN_BIT,
         "Time to fall from peak to the sustain level.",
     ),
-    range(
+    level_range(
         "amp_eg.sustain",
         "Amp EG Sustain",
         "Amp EG",
@@ -388,7 +423,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         TEN_BIT,
         "Held volume level while a key stays down.",
     ),
-    range(
+    level_range(
         "amp_eg.release",
         "Amp EG Release",
         "Amp EG",
@@ -398,7 +433,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         "Time for the volume to fade after the key is released.",
     ),
     // Mod EG
-    range(
+    level_range(
         "mod_eg.attack",
         "EG Attack",
         "EG",
@@ -407,7 +442,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         TEN_BIT,
         "Attack time of the modulation envelope.",
     ),
-    range(
+    level_range(
         "mod_eg.decay",
         "EG Decay",
         "EG",
@@ -416,7 +451,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         TEN_BIT,
         "Decay time of the modulation envelope.",
     ),
-    range(
+    level_range(
         "mod_eg.sustain",
         "EG Sustain",
         "EG",
@@ -425,7 +460,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         TEN_BIT,
         "Sustain level of the modulation envelope.",
     ),
-    range(
+    level_range(
         "mod_eg.release",
         "EG Release",
         "EG",
@@ -443,7 +478,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         LFO_EG,
         "Lets the mod EG modulate the LFO rate or intensity.",
     ),
-    range(
+    level_range(
         "lfo.rate",
         "LFO Rate",
         "LFO",
@@ -452,7 +487,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         TEN_BIT,
         "LFO speed.",
     ),
-    range(
+    level_range(
         "lfo.int",
         "LFO Int",
         "LFO",
@@ -469,7 +504,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         "What the LFO modulates: cutoff, wave shape, or pitch.",
     ),
     // Delay
-    range(
+    level_range(
         "delay.hi_pass_cutoff",
         "Delay Hi Pass Cutoff",
         "Delay",
@@ -478,7 +513,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         TEN_BIT,
         "High-pass filter on the delay feedback; raises to thin the echoes.",
     ),
-    range(
+    level_range(
         "delay.time",
         "Delay Time",
         "Delay",
@@ -487,7 +522,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         TEN_BIT,
         "Delay time.",
     ),
-    range(
+    level_range(
         "delay.feedback",
         "Delay Feedback",
         "Delay",
@@ -520,7 +555,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         TEN_BIT,
         "Mode-specific amount (e.g. detune in Unison, chord type in Chord, arp pattern in Arp).",
     ),
-    range(
+    level_range(
         "amp_velocity",
         "Amp Velocity",
         "Amp EG",
@@ -529,7 +564,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         None,
         "How much playing velocity affects loudness.",
     ),
-    range(
+    level_range(
         "portamento_time",
         "Portamento Time",
         "Voice",
@@ -538,7 +573,7 @@ pub const PROGRAM_PARAMS: &[Meta] = &[
         None,
         "Glide time between notes. 0 is off.",
     ),
-    range(
+    level_range(
         "program_level",
         "Program Level",
         "Program",
@@ -702,7 +737,7 @@ pub const GLOBAL_PARAMS: &[Meta] = &[
         "MIDI",
         "Transmit short (non-SysEx) MIDI messages.",
     ),
-    range(
+    level_range(
         "brightness",
         "Brightness",
         "General",
@@ -744,4 +779,73 @@ pub fn param(path: &str) -> Option<&'static Meta> {
         .iter()
         .chain(GLOBAL_PARAMS.iter())
         .find(|m| m.path == path)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Bounded magnitudes the editor should be able to render as a percentage.
+    const KNOWN_LEVELS: &[&str] = &[
+        "vco1.shape",
+        "filter.cutoff",
+        "filter.resonance",
+        "amp_eg.attack",
+        "amp_eg.decay",
+        "amp_eg.sustain",
+        "amp_eg.release",
+        "lfo.rate",
+        "lfo.int",
+        "delay.time",
+        "delay.feedback",
+        "program_level",
+    ];
+
+    #[test]
+    fn known_levels_are_flagged() {
+        for path in KNOWN_LEVELS {
+            let m = param(path).unwrap_or_else(|| panic!("missing catalog entry: {path}"));
+            assert!(m.level, "{path} should be a level");
+            assert!(
+                matches!(m.kind, Kind::Range { .. }),
+                "{path} level must be a Range"
+            );
+        }
+    }
+
+    #[test]
+    fn vco_pitch_is_not_a_level() {
+        // Centred/bipolar values (512 = no detune) are not magnitudes.
+        for path in ["vco1.pitch", "vco2.pitch"] {
+            assert!(!param(path).unwrap().level, "{path} must not be a level");
+        }
+    }
+
+    #[test]
+    fn non_range_kinds_are_never_levels() {
+        // Choice / Bool / Text controls are discrete and can't be a percentage.
+        for m in PROGRAM_PARAMS.iter().chain(GLOBAL_PARAMS.iter()) {
+            if !matches!(m.kind, Kind::Range { .. }) {
+                assert!(!m.level, "non-Range {} must not be a level", m.path);
+            }
+        }
+    }
+
+    #[test]
+    fn level_is_omitted_when_false() {
+        // `level: false` is the default and must not bloat the serialized catalog;
+        // `level: true` must be emitted so the editor can read it.
+        let plain = serde_yaml::to_value(param("vco1.pitch").unwrap()).unwrap();
+        assert!(
+            plain.get("level").is_none(),
+            "non-level entries must omit the `level` key"
+        );
+
+        let leveled = serde_yaml::to_value(param("filter.cutoff").unwrap()).unwrap();
+        assert_eq!(
+            leveled.get("level"),
+            Some(&serde_yaml::Value::Bool(true)),
+            "level entries must serialize `level: true`"
+        );
+    }
 }

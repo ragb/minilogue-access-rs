@@ -93,6 +93,12 @@ wasm.
    - `kind.type === 'choice'` → `EnumSelect` (options `[{value,label}]`).
    - `kind.type === 'bool'` → `SwitchField`.
    - `kind.type === 'text'` → text input (program name, 12 chars).
+   - `meta.level === true` (range entries only) → a magnitude the editor should
+     opt into percentage display when the user's `levelDisplay` preference is
+     set to percent (as GR-55/CK already do); render those with
+     `<RangeField kind="level">`. The flag is omitted when false, so treat a
+     missing `level` as plain (raw value) — centred/bipolar fields (pitch,
+     tune, swing) and discrete values stay raw.
    - `helpFor(path)` → `HelpButton`/`HelpDialog` per control.
    Group controls with `Tabs` by `meta.group` (VCO 1, VCO 2, VCO 2 Modulation,
    Mixer, Filter, Amp EG, EG, LFO, Delay, Voice, Sequencer; Global on its own
